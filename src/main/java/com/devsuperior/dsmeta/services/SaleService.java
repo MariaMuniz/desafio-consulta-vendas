@@ -1,8 +1,16 @@
 package com.devsuperior.dsmeta.services;
 
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.devsuperior.dsmeta.dto.SaleMinDTO;
@@ -20,4 +28,25 @@ public class SaleService {
 		Sale entity = result.get();
 		return new SaleMinDTO(entity);
 	}
+	
+	
+	
+	public Page<SaleMinDTO> searchSalesDateName(String minDate, String maxDate, String name, Pageable pageable) {
+		
+	LocalDate today = LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault());
+	LocalDate min=  minDate.equals("") ? today.minusDays(365) :  LocalDate.parse(minDate);
+	LocalDate max= maxDate.equals("") ? today : LocalDate.parse(maxDate);
+	Page<Sale> result=repository.searchSales(min, max, name, pageable);
+	return result.map(x -> new SaleMinDTO(x));
+	}
+	
+	public Page<SaleMinDTO> searchSummarySeller(String minDate, String maxDate, Pageable pageable) {
+		
+		LocalDate today = LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault());
+		LocalDate min=  minDate.equals("") ? today.minusDays(365) :  LocalDate.parse(minDate);
+		LocalDate max= maxDate.equals("") ? today : LocalDate.parse(maxDate);
+		Page<Sale> result=repository.searchSummary(min, max, pageable);
+		
+		return result.map(x -> new SaleMinDTO(x));
+		}
 }
