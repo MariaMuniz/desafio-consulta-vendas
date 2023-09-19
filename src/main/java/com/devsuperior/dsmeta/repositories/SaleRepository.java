@@ -1,12 +1,13 @@
 package com.devsuperior.dsmeta.repositories;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-
+import com.devsuperior.dsmeta.dto.SaleSummaryDTO;
 import com.devsuperior.dsmeta.entities.Sale;
 
 
@@ -25,12 +26,11 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
 	Page<Sale> searchSales(LocalDate min, LocalDate max, String name, Pageable pageable);
 	
 	
-	@Query(value ="SELECT obj FROM Sale obj JOIN FETCH obj.seller "
-			+"SUM((obj.amount) WHERE obj.date BETWEEN :min AND obj.date :max )"
-			+"GROUP BY obj.seller.name" ,	
-			countQuery ="SELECT COUNT(obj) FROM Sale obj JOIN obj.seller "
-		  +"SUM((obj.amount) WHERE obj.date BETWEEN  :min AND obj.date :max )"
-            +"GROUP BY obj.seller.name" )		
-	Page<Sale> searchSummary(LocalDate min, LocalDate max, Pageable pageable);
+	@Query("SELECT new com.devsuperior.dsmeta.dto.SaleSummaryDTO(obj.seller.name AS sellerName, Sum(obj.amount)AS total) "
+			+ "FROM Sale obj "
+			+ "WHERE obj.date >= :min "
+			+ "AND obj.date <= :max "
+            +"GROUP BY obj.seller.name " )		
+	List<SaleSummaryDTO> searchSummary(LocalDate min, LocalDate max);
 	
 }
